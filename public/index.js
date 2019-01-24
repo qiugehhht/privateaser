@@ -146,6 +146,98 @@ const actors = [{
   }]
 }];
 
-console.log(bars);
+
+
+//step1
+/*
+for( var i=0; i<event.length; i++)
+ {
+     for(var j =0; j<bars.length; j++)
+     {
+        if(events[i].barId==bars[j].id)
+        {
+            events[i].price = bars[j].pricePerHour * events[i].time + bars[j].pricePerPerson * events[i].persons
+        }
+     }
+ }
 console.log(events);
+*/
+
+//step1-4
+//function to search bars
+const getBar = id => bars.find(bar => bar.id === id)
+//discount rate
+const discount = numPersons =>{
+      if (numPersons > 60)
+    {
+        return 0.5;
+    }
+    if (numPersons > 20)
+    {
+        return 0.7;
+    }
+    if (numPersons > 10)
+    {
+        return 0.9;
+    }
+    else
+    {
+        return 1;
+    }
+};
+// get events iteratively
+events.forEach(event => {
+    const bar = getBar(event.barId);
+    const numPersons = event.persons;
+    event.price = (bar.pricePerHour*event.time + event.persons * bar.pricePerPerson) * discount(numPersons);
+    event.commissionAll=event.price * 0.3;
+    event.commission.insurance = event.commissionAll*0.5;
+    event.commission.treasury = event.persons;
+    event.commission.privateaser = event.commissionAll - event.commission.insurance - event.commission.treasury;
+    if (event.deductibleReduction = true)
+    {
+        event.newPrice = event.price + event.persons;//I can't change original price so I add a new price
+        event.commission.newPrivateaser = event.commissionAll - event.commission.insurance - event.commission.treasury + event.persons;
+    }
+    else if (event.deductibleReduction = false)
+    {
+        event.newPrice = event.price;
+        event.commission.newPrivateaser = event.commissionAll - event.commission.insurance - event.commission.treasury;
+    }
+
+})
+console.log(events)
+
+
+//step5
+//search events
+const getEvent = id => events.find(event => event.id === id)
+//get actor iteratively
+actors.forEach(actor =>{
+    const event = getEvent(actor.eventId);
+    actor.payment.forEach(payment =>{
+        if(payment.who == 'booker')
+        {
+            payment.amount = event.newPrice;
+        }
+        else if(payment.who == 'bar')
+        {
+            payment.amount = event.price - event.commissionAll;
+        }
+        else if(payment.who == 'insurance')
+        {
+            payment.amount = event.commission.insurance;
+        }
+        else if(payment.who == 'treasury')
+        {
+            payment.amount = event.commission.treasury;
+        }
+        else if(payment.who == 'privateaser')
+        {
+            payment.amount = event.commission.newPrivateaser;
+        }
+
+    })
+})
 console.log(actors);
+
